@@ -15,7 +15,9 @@ interface PropertyPageProps {
 }
 
 function PropertyContent({ id }: { id: string }) {
+  console.log("[v0] PropertyContent rendering with id:", id)
   const { property, isLoading, error } = useProperty(id)
+  console.log("[v0] useProperty result:", { property: property?.title, isLoading, error })
 
   // Get similar properties (same type, excluding current)
   const { properties: similarProperties } = useProperties({
@@ -26,16 +28,18 @@ function PropertyContent({ id }: { id: string }) {
   const filteredSimilar = similarProperties.filter((p) => p.id !== id).slice(0, 3)
 
   if (isLoading) {
+    console.log("[v0] Showing loading state")
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
   if (error || !property) {
+    console.log("[v0] Showing not found state, error:", error)
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
         <h1 className="text-2xl font-bold text-foreground">Property Not Found</h1>
         <p className="text-muted-foreground">The property you&apos;re looking for doesn&apos;t exist.</p>
         <Button asChild>
@@ -44,6 +48,8 @@ function PropertyContent({ id }: { id: string }) {
       </div>
     )
   }
+  
+  console.log("[v0] Rendering property:", property.title)
 
   return (
     <div className="min-h-screen bg-background">
