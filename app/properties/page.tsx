@@ -31,21 +31,41 @@ function PropertiesContent() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [filters, setFilters] = useState<Filters>({})
+  
+  // Extract URL params as stable values
+  const urlSearch = searchParams.get('search')
+  const urlType = searchParams.get('type')
+  const urlStatus = searchParams.get('status')
+  
+  const [filters, setFilters] = useState<Filters>(() => {
+    const initial: Filters = {}
+    if (urlSearch) initial.search = urlSearch
+    if (urlType) initial.type = [urlType as PropertyType]
+    if (urlStatus) initial.status = [urlStatus as PropertyStatus]
+    return initial
+  })
 
-  // Parse URL params on mount
+  // Parse URL params when they change
   useEffect(() => {
-    const search = searchParams.get('search')
-    const type = searchParams.get('type')
-    const status = searchParams.get('status')
-
     const newFilters: Filters = {}
-    if (search) newFilters.search = search
-    if (type) newFilters.type = [type as PropertyType]
-    if (status) newFilters.status = [status as PropertyStatus]
+    if (urlSearch) newFilters.search = urlSearch
+    if (urlType) newFilters.type = [urlType as PropertyType]
+    if (urlStatus) newFilters.status = [urlStatus as PropertyStatus]
 
-    setFilters(newFilters)
-  }, [searchParams])
+    setFilters((prev) => {
+      // Only update if values actually changed
+      const prevSearch = prev.search || ''
+      const prevType = prev.type?.[0] || ''
+      const prevStatus = prev.status?.[0] || ''
+      
+      if (prevSearch !== (urlSearch || '') || 
+          prevType !== (urlType || '') || 
+          prevStatus !== (urlStatus || '')) {
+        return newFilters
+      }
+      return prev
+    })
+  }, [urlSearch, urlType, urlStatus])
 
   const { properties, isLoading, total, totalPages } = useProperties({
     filters,
